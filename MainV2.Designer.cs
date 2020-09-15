@@ -52,6 +52,7 @@ namespace MissionPlanner
             this.MenuConnect = new System.Windows.Forms.ToolStripButton();
             this.toolStripConnectionControl = new MissionPlanner.Controls.ToolStripConnectionControl();
             this.MenuArduPilot = new System.Windows.Forms.ToolStripButton();
+			this.MenuRASAI = new System.Windows.Forms.ToolStripButton();
             this.menu = new MissionPlanner.Controls.MyButton();
             this.panel1 = new System.Windows.Forms.Panel();
             this.status1 = new MissionPlanner.Controls.Status();
@@ -75,6 +76,7 @@ namespace MissionPlanner
             this.MenuHelp,
             this.MenuConnect,
             this.toolStripConnectionControl,
+			this.MenuRASAI,
             this.MenuArduPilot});
             this.MainMenu.Name = "MainMenu";
             this.MainMenu.ShowItemToolTips = true;
@@ -203,6 +205,17 @@ namespace MissionPlanner
             this.MenuArduPilot.Name = "MenuArduPilot";
             this.MenuArduPilot.Click += new System.EventHandler(this.MenuArduPilot_Click);
             // 
+            // MenuRASAI
+            // 
+            this.MenuRASAI.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            resources.ApplyResources(this.MenuRASAI, "MenuArduPilot");
+            this.MenuRASAI.BackColor = System.Drawing.Color.Transparent;
+            this.MenuRASAI.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.MenuRASAI.ForeColor = System.Drawing.Color.White;
+            this.MenuRASAI.Image = global::MissionPlanner.Properties.Resources._RASAILogo;
+            this.MenuRASAI.Margin = new System.Windows.Forms.Padding(0);
+            this.MenuRASAI.Name = "MenuRASAI";
+            // 
             // menu
             // 
             resources.ApplyResources(this.menu, "menu");
@@ -264,6 +277,7 @@ namespace MissionPlanner
         private System.Windows.Forms.ToolStripMenuItem connectionListToolStripMenuItem;
         public System.Windows.Forms.ToolStripButton MenuHelp;
         public System.Windows.Forms.ToolStripButton MenuArduPilot;
+		public System.Windows.Forms.ToolStripButton MenuRASAI;
         public Controls.Status status1;
     }
 }

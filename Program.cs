@@ -156,7 +156,7 @@ namespace MissionPlanner
                 return;
             }
 
-            name = "Mission Planner";
+            name = "RAN Mission Management System";
 
             try
             {

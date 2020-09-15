@@ -358,6 +358,8 @@
             this.hud1.Russian = false;
             this.hud1.skyColor1 = System.Drawing.Color.Blue;
             this.hud1.skyColor2 = System.Drawing.Color.LightBlue;
+            this.hud1.groundColor1 = System.Drawing.Color.DarkBlue;
+            this.hud1.groundColor2 = System.Drawing.Color.DarkBlue;
             this.hud1.speedunit = null;
             this.hud1.SSA = 0F;
             this.hud1.status = false;

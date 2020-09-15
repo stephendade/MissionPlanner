@@ -65,7 +65,7 @@ namespace MissionPlanner.Utilities
             terminalTheming = true;
             strThemeName = "BurntKermit.mpsystheme";
 
-            colors.Add("Background", Color.FromArgb(0x26, 0x27, 0x28), "BGColor");						// This changes the colour of the main menu background
+            //colors.Add("Background", Color.FromArgb(0x26, 0x27, 0x28), "BGColor");						// This changes the colour of the main menu background
             colors.Add("Control Background", Color.FromArgb(0x43, 0x44, 0x45), "ControlBGColor");		// This changes the colour of the sub menu backgrounds
             colors.Add("Text", Color.White, "TextColor");										// This changes the colour of text
             colors.Add("TextBox Background", Color.FromArgb(0x43, 0x44, 0x45), "BGColorTextBox");		// This changes the colour of the background of textboxes
@@ -89,8 +89,8 @@ namespace MissionPlanner.Utilities
             colors.Add("BSV Unselected Text", Color.WhiteSmoke, "UnselectedTextColour");			// This changes the colour of unselected text in a BSV button
             colors.Add("Horizontal ProgressBar", Color.FromArgb(148, 193, 31), "HorizontalPBValueColor"); // This changes the colour of the horizontal progressbar
             colors.Add("HUD text and drawings", Color.LightGray, "HudText");                       
-            colors.Add("HUD Ground top", Color.FromArgb(0x9b, 0xb8, 0x24), "HudGroundTop");
-            colors.Add("HUD Ground bottom", Color.FromArgb(0x41, 0x4f, 0x07), "HudGroundBot");
+            colors.Add("HUD Ground top", Color.FromArgb(0x3f, 0x48, 0xcc), "HudGroundTop");
+            colors.Add("HUD Ground bottom", Color.FromArgb(0x3f, 0x48, 0xcc), "HudGroundBot");
             colors.Add("HUD Sky top", Color.Blue, "HudSkyTop");
             colors.Add("HUD Sky bottom", Color.LightBlue, "HudSkyBot");
 
