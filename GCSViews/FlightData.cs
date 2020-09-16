@@ -48,6 +48,7 @@ namespace MissionPlanner.GCSViews
         internal static GMapOverlay photosoverlay;
         internal static GMapOverlay poioverlay = new GMapOverlay("POI");
         internal static GMapOverlay rallypointoverlay;
+        internal static GMapOverlay arpaoverlay;
         internal static GMapOverlay tfrpolygons;
         internal GMapMarker CurrentGMapMarker;
 
@@ -297,6 +298,10 @@ namespace MissionPlanner.GCSViews
 
             rallypointoverlay = new GMapOverlay("rally points");
             gMapControl1.Overlays.Add(rallypointoverlay);
+
+            arpaoverlay = new GMapOverlay("ARPA RADAR Data");
+            gMapControl1.Overlays.Add(arpaoverlay);
+            
 
             gMapControl1.Overlays.Add(poioverlay);
 
@@ -3055,6 +3060,20 @@ namespace MissionPlanner.GCSViews
                             list9.Add(time, (list9item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                         if (list10item != null)
                             list10.Add(time, (list10item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
+                    }
+
+                    if (MainV2.ShowARPA)
+                    {
+                        arpaoverlay.Markers.Clear();
+                        foreach (var item in ARPATrack.CreateRanges())
+                        {
+                            arpaoverlay.Markers.Add(item);
+                        }
+
+                        foreach (var item in ARPATrack.CreateContacts())
+                        {
+                            arpaoverlay.Markers.Add(item);
+                        }
                     }
 
                     // update map - 0.3sec if connected , 2 sec if not connected

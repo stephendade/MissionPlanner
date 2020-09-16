@@ -353,6 +353,8 @@ namespace MissionPlanner
         public static bool ShowAirports { get; set; }
         public static bool ShowTFR { get; set; }
 
+        public static bool ShowARPA { get; set; }
+
         private Utilities.adsb _adsb;
 
         public bool EnableADSB
@@ -684,6 +686,8 @@ namespace MissionPlanner
             L10N.GetConfigLang();
 
             ShowAirports = true;
+
+            ShowARPA = true;
 
             // setup adsb
             Utilities.adsb.UpdatePlanePosition += adsb_UpdatePlanePosition;
