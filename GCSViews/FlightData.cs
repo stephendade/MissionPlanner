@@ -49,6 +49,7 @@ namespace MissionPlanner.GCSViews
         internal static GMapOverlay poioverlay = new GMapOverlay("POI");
         internal static GMapOverlay rallypointoverlay;
         internal static GMapOverlay arpaoverlay;
+        internal static GMapOverlay airspaceOverlay;
         internal static GMapOverlay tfrpolygons;
         internal GMapMarker CurrentGMapMarker;
 
@@ -301,7 +302,9 @@ namespace MissionPlanner.GCSViews
 
             arpaoverlay = new GMapOverlay("ARPA RADAR Data");
             gMapControl1.Overlays.Add(arpaoverlay);
-            
+
+            airspaceOverlay = new GMapOverlay("Airspace");
+            gMapControl1.Overlays.Add(airspaceOverlay);
 
             gMapControl1.Overlays.Add(poioverlay);
 
@@ -3062,18 +3065,20 @@ namespace MissionPlanner.GCSViews
                             list10.Add(time, (list10item.GetValue(MainV2.comPort.MAV.cs, null).ConvertToDouble()));
                     }
 
-                    if (MainV2.ShowARPA)
+                    // Display airspace overlay, if selected
+                    if (MainV2.ShowAirspace && airspaceOverlay.Polygons.Count == 0)
                     {
-                        arpaoverlay.Markers.Clear();
-                        foreach (var item in ARPATrack.CreateRanges())
-                        {
-                            arpaoverlay.Markers.Add(item);
-                        }
+                        airspaceOverlay.Polygons.Clear();
+                        AirspaceLayer ll = new AirspaceLayer();
 
-                        foreach (var item in ARPATrack.CreateContacts())
+                        foreach (GMapPolygon zone in ll.zones)
                         {
-                            arpaoverlay.Markers.Add(item);
+                            airspaceOverlay.Polygons.Add(zone);
                         }
+                    }
+                    else if (!MainV2.ShowAirspace && airspaceOverlay.Polygons.Count > 0)
+                    {
+                        airspaceOverlay.Polygons.Clear();
                     }
 
                     // update map - 0.3sec if connected , 2 sec if not connected
@@ -3129,6 +3134,24 @@ namespace MissionPlanner.GCSViews
                             continue;
 
                         updateRoutePosition();
+
+                        if (MainV2.ShowARPA)
+                        {
+                            arpaoverlay.Markers.Clear();
+                            //foreach (var item in ARPATrack.CreateRanges())
+                            //{
+                            //    arpaoverlay.Markers.Add(item);
+                            //}
+
+                            foreach (var item in ARPATrack.CreateContacts())
+                            {
+                                arpaoverlay.Markers.Add(item);
+                            }
+                        }
+                        else if (arpaoverlay.Markers.Count > 0)
+                        {
+                            arpaoverlay.Markers.Clear();
+                        }
 
                         // update programed wp course
                         if (waypoints.AddSeconds(5) < DateTime.Now)

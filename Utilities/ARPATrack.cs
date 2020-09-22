@@ -12,32 +12,12 @@ namespace MissionPlanner.Utilities
 {
     class ARPATrack
     {
-        /// <summary>
-        /// Create a series of range circle overlays
-        /// </summary>
-        /// <returns></returns>
-        public static List<RangeCircle> CreateRanges()
+        public static List<GMapMarker> CreateContacts()
         {
-            //_overlay.Polygons.
-            //FlightData.instance.gMapControl1.Overlays.
-            List<RangeCircle> ranges = new List<RangeCircle>();
+            List<GMapMarker> contacts = new List<GMapMarker>();
 
-            List<int> rangeValues = new List<int> { 1000, 2000, 3000, 4000 };
-
-            foreach (var item in rangeValues)
-            {
-                ranges.Add(CreateCircle(FlightData.instance.gMapControl1.Position.Lat, FlightData.instance.gMapControl1.Position.Lng, item));
-            }
-
-            return ranges;
-        }
-
-        public static List<GMapMarkerAISBoat> CreateContacts()
-        {
-            List<GMapMarkerAISBoat> contacts = new List<GMapMarkerAISBoat>();
-
-            double lat = -35.03;
-            double lon = 150.68;
+            double lat = -38.41;
+            double lon = 145.16;
             int heading = 0;
             string MMSI = "Contact1";
             double velocity = 1.5;
@@ -51,6 +31,9 @@ namespace MissionPlanner.Utilities
             //marker.Tag = item;
 
             contacts.Add(marker);
+
+            //add a 10m circle around the object
+            contacts.Add(CreateCircle(lat, lon, 10));
 
             return contacts;
 
@@ -115,10 +98,10 @@ namespace MissionPlanner.Utilities
             Size = new System.Drawing.Size(50, 50);
             Offset = new System.Drawing.Point(-Size.Width / 2, -Size.Height / 2);
 
-            ToolTipText = "" + wprad.ToString() + "m";
-            ToolTipMode = MarkerTooltipMode.Always;
-            ToolTip.Font = new Font(FontFamily.GenericSansSerif, 8);
-            ToolTip.Stroke = new Pen(Brushes.Transparent, 0);
+            //ToolTipText = "" + wprad.ToString() + "m";
+            //ToolTipMode = MarkerTooltipMode.Always;
+            //ToolTip.Font = new Font(FontFamily.GenericSansSerif, 8);
+            //ToolTip.Stroke = new Pen(Brushes.Transparent, 0);
 
 
         }
@@ -132,7 +115,7 @@ namespace MissionPlanner.Utilities
 
             // if we have drawn it, then keep that color
             if (!initcolor.HasValue)
-                Color = Color.Black;
+                Color = Color.Red;
 
             //wprad = 300;
 
@@ -158,7 +141,7 @@ namespace MissionPlanner.Utilities
             int widtharc = (int)Math.Abs(loc.X - LocalPosition.X);
             int heightarc = (int)Math.Abs(loc.X - LocalPosition.X);
 
-            ToolTip.Offset = new Point((widtharc/2)-10, 0);
+            //ToolTip.Offset = new Point((widtharc/2)-10, 0);
 
             //ToolTipPosition = LocalPosition + new Point(radius, 0);
 

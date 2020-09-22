@@ -355,6 +355,8 @@ namespace MissionPlanner
 
         public static bool ShowARPA { get; set; }
 
+        public static bool ShowAirspace { get; set; }
+
         private Utilities.adsb _adsb;
 
         public bool EnableADSB
@@ -688,6 +690,8 @@ namespace MissionPlanner
             ShowAirports = true;
 
             ShowARPA = true;
+
+            ShowAirspace = true;
 
             // setup adsb
             Utilities.adsb.UpdatePlanePosition += adsb_UpdatePlanePosition;

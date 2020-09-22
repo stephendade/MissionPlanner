@@ -619,6 +619,7 @@
     <Compile Include="UserPanel\UserPanel.Designer.cs">
       <DependentUpon>UserPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utilities\AirspaceLayer.cs" />
     <Compile Include="Utilities\AltitudeAngel\MissionPlannerStateAdapter.cs" />
     <Compile Include="Utilities\ARPATrack.cs" />
     <Compile Include="Utilities\NativeLibrary.cs" />
@@ -4437,6 +4438,9 @@
     </Content>
     <Content Include="rotmat.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="zones.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="plugins\example-watchbutton.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
