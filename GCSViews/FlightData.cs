@@ -2304,6 +2304,29 @@ namespace MissionPlanner.GCSViews
                 }
             }
         }
+        private void rangeoverlayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (rangeoverlay.Checked)
+            {
+                MainV2.ShowAirspace = true;
+            }
+            else
+            {
+                MainV2.ShowAirspace = false;
+            }
+        }
+
+        private void radaroverlayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (radaroverlay.Checked)
+            {
+                MainV2.ShowARPA = true;
+            }
+            else
+            {
+                MainV2.ShowARPA = false;
+            }
+        }
 
         private void flyToHereAltToolStripMenuItem_Click(object sender, EventArgs e)
         {

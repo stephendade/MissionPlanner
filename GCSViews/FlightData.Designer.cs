@@ -148,6 +148,8 @@
             this.contextMenuStripMap = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.goHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flyToHereAltToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rangeoverlay = new System.Windows.Forms.ToolStripMenuItem();
+            this.radaroverlay = new System.Windows.Forms.ToolStripMenuItem();
             this.flyToCoordsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addPoiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -2056,7 +2058,9 @@
             this.setHomeHereToolStripMenuItem,
             this.takeOffToolStripMenuItem,
             this.onOffCameraOverlapToolStripMenuItem,
-            this.altitudeAngelSettingsToolStripMenuItem});
+            this.altitudeAngelSettingsToolStripMenuItem,
+            this.rangeoverlay,
+            this.radaroverlay});
             this.contextMenuStripMap.Name = "contextMenuStrip1";
             resources.ApplyResources(this.contextMenuStripMap, "contextMenuStripMap");
             // 
@@ -2071,6 +2075,22 @@
             this.flyToHereAltToolStripMenuItem.Name = "flyToHereAltToolStripMenuItem";
             resources.ApplyResources(this.flyToHereAltToolStripMenuItem, "flyToHereAltToolStripMenuItem");
             this.flyToHereAltToolStripMenuItem.Click += new System.EventHandler(this.flyToHereAltToolStripMenuItem_Click);
+            // 
+            // rangeoverlay
+            // 
+            this.rangeoverlay.Name = "rangeoverlayToolStripMenuItem";
+            this.rangeoverlay.CheckOnClick = true;
+            this.rangeoverlay.Checked = true;
+            resources.ApplyResources(this.rangeoverlay, "rangeoverlayToolStripMenuItem");
+            this.rangeoverlay.Click += new System.EventHandler(this.rangeoverlayToolStripMenuItem_Click);
+            // 
+            // radaroverlay
+            // 
+            this.radaroverlay.Name = "radaroverlayToolStripMenuItem";
+            this.radaroverlay.CheckOnClick = true;
+            this.radaroverlay.Checked = true;
+            resources.ApplyResources(this.radaroverlay, "radaroverlayToolStripMenuItem");
+            this.radaroverlay.Click += new System.EventHandler(this.radaroverlayToolStripMenuItem_Click);
             // 
             // flyToCoordsToolStripMenuItem
             // 
@@ -2544,6 +2564,8 @@
         private Controls.QuickView quickView1;
         private Controls.QuickView quickView4;
         private System.Windows.Forms.ToolStripMenuItem flyToHereAltToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rangeoverlay;
+        private System.Windows.Forms.ToolStripMenuItem radaroverlay;
         private System.Windows.Forms.ToolStripMenuItem flightPlannerToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem userItemsToolStripMenuItem;
         //private Crom.Controls.Docking.DockContainer dockContainer1;
