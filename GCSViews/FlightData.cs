@@ -53,6 +53,8 @@ namespace MissionPlanner.GCSViews
         internal static GMapOverlay tfrpolygons;
         internal GMapMarker CurrentGMapMarker;
 
+        internal ARPATrack arpaTrack = new ARPATrack();
+
         internal PointLatLng MouseDownStart;
 
         //The file path of the selected script
@@ -3166,7 +3168,7 @@ namespace MissionPlanner.GCSViews
                             //    arpaoverlay.Markers.Add(item);
                             //}
 
-                            foreach (var item in ARPATrack.CreateContacts())
+                            foreach (var item in arpaTrack.UpdateContacts())
                             {
                                 arpaoverlay.Markers.Add(item);
                             }

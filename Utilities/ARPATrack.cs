@@ -3,6 +3,7 @@ using GMap.NET.WindowsForms;
 using MissionPlanner.GCSViews;
 using MissionPlanner.Maps;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -10,17 +11,38 @@ using System.Threading.Tasks;
 
 namespace MissionPlanner.Utilities
 {
+    struct contact
+    {
+        public GMapMarker vehicle;
+        public GMapMarker rangeOverlay;
+    }
+
     class ARPATrack
     {
-        public static List<GMapMarker> CreateContacts()
-        {
-            List<GMapMarker> contacts = new List<GMapMarker>();
+        ConcurrentDictionary<string, contact> contacts; // = new ConcurrentDictionary<string, contact>();
+        private static System.Timers.Timer aTimer;
+        Random random = new Random();
 
-            double lat = -38.41;
-            double lon = 145.16;
-            int heading = 0;
-            string MMSI = "Contact1";
-            double velocity = 1.5;
+        public ARPATrack()
+        {
+            contacts = new ConcurrentDictionary<string, contact>();
+
+            // Create a timer with a two second interval.
+            aTimer = new System.Timers.Timer(2000);
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += ATimer_Elapsed; ;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+
+        }
+
+        private void ATimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            double lat = random.Next(-3841, -3831).ConvertToDouble()/100;
+            double lon = random.Next(14546, 14646).ConvertToDouble() / 100;
+            int heading = random.Next(0, 360);
+            string MMSI = "Contact" + random.Next(0, 10).ToString();
+            double velocity = random.Next(0, 20);
 
             GMapMarkerAISBoat marker = new GMapMarkerAISBoat(new PointLatLngAlt(lat, lon, 0), heading);
             //marker.Position = new PointLatLngAlt(item.lat / 1e7, item.lon / 1e7, 0);
@@ -30,13 +52,25 @@ namespace MissionPlanner.Utilities
             marker.ToolTipMode = MarkerTooltipMode.OnMouseOver;
             //marker.Tag = item;
 
-            contacts.Add(marker);
+            contact newContact = new contact();
+            newContact.vehicle = marker;
+            newContact.rangeOverlay = CreateCircle(lat, lon, 10);
 
-            //add a 10m circle around the object
-            contacts.Add(CreateCircle(lat, lon, 10));
+            //contacts.AddOrUpdate(MMSI, newContact);
+            contacts[MMSI] = newContact;
 
-            return contacts;
+        }
 
+        public List<GMapMarker> UpdateContacts()
+        {
+            List<GMapMarker> retlist = new List<GMapMarker>();
+            foreach (var item in contacts)
+            {
+                retlist.Add(item.Value.vehicle);
+                retlist.Add(item.Value.rangeOverlay);
+            }
+
+            return retlist;
         }
 
         /// <summary>
