@@ -9,12 +9,38 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Threading.Tasks;
 
+/*
+ * $PKHUN,2, 12,??, 1234,000.00,000.0, 16.0, 128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00<CR><LF>
+ * Meaning: OPS NTD ARPA local track 12, labelled as block track "1234" is positioned at 50 degrees 29.78
+ * minutes North, 2 degrees 24.96 minutes West at time 8:30:31 with tme speed 16.0 knots, tme course 128.6.
+ * Position is not from a GPS, target is being tracked and the full track table data is being output.
+ * 
+ *0 $PKHUN - start of message
+ *1 X - radar source, 3-4
+ *2 XXXX - local track number, 1-350
+ *3 XX - target identity, first char F/H/N/U second char B/S/A/Y
+ *4 XXXXXXXXXX - target label
+ *5 XXX.XX - target range (nm)
+ *6 XXX.X - target bearing (deg)
+ *7 XXXX.X - target true speed (kts)
+ *8 XXX.X - target true course (deg)
+ *9 XXX.X - target closest point of approach (min)
+ *10 DDDMM.SSX - latitude, degrees, minutes, 100ths of minutes, N or S
+ *11 DDDMM.SSX - longitude, degrees, minutes, 100ths of minutes, E or W
+ *12 HH:MM:SS - time of extraction
+ *13 X - GPS position source N/S
+ *14 X - target status L/T
+ *15 X - content of target data W/U/S
+ *16 *00<CR><LF> - end of message
+ */
+
 namespace MissionPlanner.Utilities
 {
     struct contact
     {
         public GMapMarker vehicle;
         public GMapMarker rangeOverlay;
+        public string label;
     }
 
     class ARPATrack
@@ -22,6 +48,7 @@ namespace MissionPlanner.Utilities
         ConcurrentDictionary<string, contact> contacts; // = new ConcurrentDictionary<string, contact>();
         private static System.Timers.Timer aTimer;
         Random random = new Random();
+        private string bufferstr;
 
         public ARPATrack()
         {
@@ -38,27 +65,96 @@ namespace MissionPlanner.Utilities
 
         private void ATimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            double lat = random.Next(-3841, -3831).ConvertToDouble()/100;
-            double lon = random.Next(14546, 14646).ConvertToDouble() / 100;
+            //create a test track
+            double latDDDMM = 3800 + random.Next(0, 60).ConvertToDouble() + (random.Next(0, 100).ConvertToDouble() / 10000.0);
+            double lonDDDMM = 14500 + random.Next(0, 60).ConvertToDouble() + (random.Next(0, 100).ConvertToDouble() / 10000.0);
             int heading = random.Next(0, 360);
             string MMSI = "Contact" + random.Next(0, 10).ToString();
             double velocity = random.Next(0, 20);
 
-            GMapMarkerAISBoat marker = new GMapMarkerAISBoat(new PointLatLngAlt(lat, lon, 0), heading);
-            //marker.Position = new PointLatLngAlt(item.lat / 1e7, item.lon / 1e7, 0);
-            //marker.heading = item.heading / 100.0f;
-            marker.ToolTipText = "MMSI: " + MMSI + "\n" +
-                                 "Speed: " + (velocity / 100).ToString("0 m/s") + "\n";
+            //bufferstr += "$PKHUN,2,12,??,1234,000.00,000.0,16.0,128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00\r\n"; DDDMM.SSX
+            bufferstr += "$PKHUN,2,12,??," + MMSI + ",000.00,000.0," + velocity.ToString("F1") + ", " + heading.ToString("F1")  + ",00.0,000.0,0" + latDDDMM.ToString("F2") + "S," + lonDDDMM.ToString("F2") + "E,08:30:31,S,T,W,*00\r\n";
+
+            contact newContact = parseARPAStringbuffer();
+            if(newContact.rangeOverlay != null && newContact.vehicle != null)
+            {
+                contacts[newContact.label] = newContact;
+            }
+
+        }
+
+        public contact parseARPAStringbuffer()
+        {
+            //search bufferstr for start
+            int startindex = bufferstr.IndexOf("$PKHUN");
+            int endindex = bufferstr.IndexOf("*00\r\n");
+            //CustomMessageBox.Show("ARPA HERE1");
+            contact retContact = new contact();
+
+            //check if we actually have a string
+            if (startindex == -1 || endindex == -1)
+            {
+                retContact.rangeOverlay = null;
+                retContact.vehicle = null;
+                return retContact;
+            }
+
+            //CustomMessageBox.Show("ARPA HERE2a");
+
+            //get substring
+            string arpastring = bufferstr.Substring(startindex, endindex - startindex);
+            //CustomMessageBox.Show("ARPA HERE2b: " + bufferstr.Length);
+            //discard everything before AND the substring itself
+            bufferstr = bufferstr.Remove(0, endindex + 1);
+            //CustomMessageBox.Show("ARPA HERE2c");
+            //and parse
+            string[] fields = arpastring.Split(',');
+            //CustomMessageBox.Show(fields.Length.ToString());
+            // check we have the correct number of fields
+            if (fields.Length != 18)
+            {
+                retContact.rangeOverlay = null;
+                retContact.vehicle = null;
+                return retContact;
+            }
+
+            //CustomMessageBox.Show("ARPA HERE3");
+
+            //interpret fields
+            //DDDMM.SSX - latitude, degrees, minutes, 100ths of minutes, N or S
+            //CustomMessageBox.Show(fields[11]);
+            double lat = double.Parse(fields[11].Substring(0, 3)) + (double.Parse(fields[11].Substring(3, 2))/60.0) + (double.Parse(fields[11].Substring(6, 2)) / 6000.0);
+            //CustomMessageBox.Show(fields[11].ToString() + " = " + lat.ToString());
+            double lon = double.Parse(fields[12].Substring(0, 3)) + (double.Parse(fields[12].Substring(3, 2)) / 60.0) + (double.Parse(fields[12].Substring(6, 2)) / 6000.0);
+            //CustomMessageBox.Show(fields[12].ToString() + " = " + lon.ToString());
+            //CustomMessageBox.Show(fields[9]);
+            float bearing = float.Parse(fields[8]);
+            //CustomMessageBox.Show(fields[8]);
+            float velocity = float.Parse(fields[7]);
+            //CustomMessageBox.Show(fields[8]);
+            string label = fields[4];
+            if (fields[11][8] == 'S')
+            {
+                lat = -lat;
+            }
+            if (fields[12][8] == 'W')
+            {
+                lon = -lon;
+            }
+
+            //CustomMessageBox.Show("ARPA HERE4");
+
+            GMapMarkerAISBoat marker = new GMapMarkerAISBoat(new PointLatLngAlt(lat, lon, 0), bearing);
+            marker.ToolTipText = "Label: " + label + "\n" +
+                     "Speed: " + velocity.ToString("0 kts") + "\n" +
+                     "Bearing: " + bearing.ToString("0 deg") + "\n";
             marker.ToolTipMode = MarkerTooltipMode.OnMouseOver;
-            //marker.Tag = item;
 
-            contact newContact = new contact();
-            newContact.vehicle = marker;
-            newContact.rangeOverlay = CreateCircle(lat, lon, 10);
-
-            //contacts.AddOrUpdate(MMSI, newContact);
-            contacts[MMSI] = newContact;
-
+            retContact.vehicle = marker;
+            retContact.rangeOverlay = CreateCircle(lat, lon, 10);
+            retContact.label = label;
+            //CustomMessageBox.Show("ARPA " + label + " with pos " + fields[11] + ", " + fields[12] + " -> " + lat.ToString() + ", " + lon.ToString());
+            return retContact;
         }
 
         public List<GMapMarker> UpdateContacts()
