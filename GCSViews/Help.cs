@@ -4,6 +4,7 @@ using MissionPlanner.Utilities;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using Settings = MissionPlanner.Utilities.Settings;
 
 namespace MissionPlanner.GCSViews
 {

@@ -7,7 +7,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
+using System.IO.Ports;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
+using Xamarin.Forms;
+//using Settings = Properties.Settings;
 
 /*
  * $PKHUN,2, 12,??, 1234,000.00,000.0, 16.0, 128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00<CR><LF>
@@ -45,10 +51,14 @@ namespace MissionPlanner.Utilities
 
     class ARPATrack
     {
-        ConcurrentDictionary<string, contact> contacts; // = new ConcurrentDictionary<string, contact>();
+        ConcurrentDictionary<string, contact> contacts;
         private static System.Timers.Timer aTimer;
         Random random = new Random();
         private string bufferstr;
+        private const string logfile = "ARPALog.txt";
+        private SerialPort _serialPort;
+        private Thread readThread;
+        bool _continue = true;
 
         public ARPATrack()
         {
@@ -57,10 +67,49 @@ namespace MissionPlanner.Utilities
             // Create a timer with a two second interval.
             aTimer = new System.Timers.Timer(2000);
             // Hook up the Elapsed event for the timer. 
-            aTimer.Elapsed += ATimer_Elapsed; ;
+            aTimer.Elapsed += ATimer_Elapsed;
             aTimer.AutoReset = true;
-            aTimer.Enabled = true;
+            //aTimer.Enabled = true;
 
+            try
+            {
+                _serialPort = new SerialPort(MissionPlanner.Properties.Settings.Default.port, MissionPlanner.Properties.Settings.Default.baudrate);
+                _serialPort.Open();
+                readThread = new Thread(Read);
+                readThread.Start();
+            }
+            catch (Exception e)
+            {
+                //shut down the read thread
+                CustomMessageBox.Show(e.ToString(), "ARPA Error");
+                _continue = false;
+                if (readThread != null && readThread.IsAlive)
+                {
+                    readThread.Join();
+                }
+                if (_serialPort != null && _serialPort.IsOpen)
+                {
+                    _serialPort.Close();
+                }
+                CustomMessageBox.Show("Using Simulated Data for ARPA Radar", "ARPA Error");
+                aTimer.Enabled = true;
+            }
+
+
+        }
+
+        ~ARPATrack()
+        {
+            //shut down the read thread
+            _continue = false;
+            if (readThread != null && readThread.IsAlive)
+            {
+                readThread.Abort();
+            }
+            if (_serialPort.IsOpen)
+            {
+                _serialPort.Close();
+            }
         }
 
         private void ATimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -72,15 +121,49 @@ namespace MissionPlanner.Utilities
             string MMSI = "Contact" + random.Next(0, 10).ToString();
             double velocity = random.Next(0, 20);
 
-            //bufferstr += "$PKHUN,2,12,??,1234,000.00,000.0,16.0,128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00\r\n"; DDDMM.SSX
-            bufferstr += "$PKHUN,2,12,??," + MMSI + ",000.00,000.0," + velocity.ToString("F1") + ", " + heading.ToString("F1")  + ",00.0,000.0,0" + latDDDMM.ToString("F2") + "S," + lonDDDMM.ToString("F2") + "E,08:30:31,S,T,W,*00\r\n";
+            //toSend = "$PKHUN,2,12,??,1234,000.00,000.0,16.0,128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00\r\n"; DDDMM.SSX
+            string toSend = "$PKHUN,2,12,??," + MMSI + ",000.00,000.0," + velocity.ToString("F1") + ", " + heading.ToString("F1") + ",00.0,000.0,0" + latDDDMM.ToString("F2") + "S," + lonDDDMM.ToString("F2") + "E,08:30:31,S,T,W,*00\r\n";
+
+            processNewText(toSend);
+
+        }
+
+        public void Read()
+        {
+            while (_continue)
+            {
+                try
+                {
+                    string message = _serialPort.ReadExisting();
+                    processNewText(message);
+                }
+                catch (TimeoutException) { }
+            }
+        }
+
+        private void processNewText(string toSend)
+        {
+            //first log it all
+            if (!File.Exists(logfile))
+            {
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(logfile))
+                {
+                    sw.WriteLine("");
+                }
+            }
+            using (StreamWriter sw = File.AppendText(logfile))
+            {
+                sw.Write(toSend);
+            }
+
+            bufferstr += toSend;
 
             contact newContact = parseARPAStringbuffer();
-            if(newContact.rangeOverlay != null && newContact.vehicle != null)
+            if (newContact.rangeOverlay != null && newContact.vehicle != null)
             {
                 contacts[newContact.label] = newContact;
             }
-
         }
 
         public contact parseARPAStringbuffer()
@@ -213,7 +296,7 @@ namespace MissionPlanner.Utilities
             if (initcolor.HasValue)
                 Color = initcolor.Value;
             else
-                Color = Color.Black;
+                Color = System.Drawing.Color.Black;
         }
 
         public RangeCircle(PointLatLng p, int radius)
@@ -245,7 +328,7 @@ namespace MissionPlanner.Utilities
 
             // if we have drawn it, then keep that color
             if (!initcolor.HasValue)
-                Color = Color.Red;
+                Color = System.Drawing.Color.Red;
 
             //wprad = 300;
 

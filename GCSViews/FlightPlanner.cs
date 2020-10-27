@@ -47,6 +47,7 @@ using ILog = log4net.ILog;
 using Placemark = SharpKml.Dom.Placemark;
 using Point = System.Drawing.Point;
 using Resources = MissionPlanner.Properties.Resources;
+using Settings = MissionPlanner.Utilities.Settings;
 
 namespace MissionPlanner.GCSViews
 {
