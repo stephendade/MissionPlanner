@@ -56,6 +56,8 @@ namespace MissionPlanner.Utilities
         Random random = new Random();
         private string bufferstr;
         private const string logfile = "ARPALog.txt";
+        private const string datafile = "WinningARPAExample.txt";
+        private List<string> datafileRead = new List<string>();
         private SerialPort _serialPort;
         private Thread readThread;
         bool _continue = true;
@@ -80,8 +82,22 @@ namespace MissionPlanner.Utilities
             }
             catch (Exception e)
             {
-                //shut down the read thread
-                CustomMessageBox.Show(e.ToString(), "ARPA Error");
+                //try reading a text file instead
+                if (File.Exists(datafile))
+                {
+                    //datafileRead = File.ReadAllText(datafile);
+                    using (var reader = new StreamReader(datafile))
+                        while (reader.Peek() >= 0)
+                            datafileRead.Add(reader.ReadLine() + "\r\n"); //need to re-add newlines, as readline removes them
+                    CustomMessageBox.Show("Using Datafile for ARPA Radar: " + datafileRead.Count, "ARPA Info");
+                }
+                else
+                {
+                    //shut down the read thread
+                    CustomMessageBox.Show(e.ToString(), "ARPA Error");
+                    CustomMessageBox.Show("Using Simulated Data for ARPA Radar", "ARPA Error");
+                }
+
                 _continue = false;
                 if (readThread != null && readThread.IsAlive)
                 {
@@ -91,7 +107,7 @@ namespace MissionPlanner.Utilities
                 {
                     _serialPort.Close();
                 }
-                CustomMessageBox.Show("Using Simulated Data for ARPA Radar", "ARPA Error");
+                
                 aTimer.Enabled = true;
             }
 
@@ -114,17 +130,38 @@ namespace MissionPlanner.Utilities
 
         private void ATimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            //create a test track
-            double latDDDMM = 3800 + random.Next(0, 60).ConvertToDouble() + (random.Next(0, 100).ConvertToDouble() / 10000.0);
-            double lonDDDMM = 14500 + random.Next(0, 60).ConvertToDouble() + (random.Next(0, 100).ConvertToDouble() / 10000.0);
-            int heading = random.Next(0, 360);
-            string MMSI = "Contact" + random.Next(0, 10).ToString();
-            double velocity = random.Next(0, 20);
+            if (datafileRead.Count > 0)
+            {
+                //read next line. Remember to add in newlines!
+                try
+                {
+                    processNewText(datafileRead[0]);
+                }
+                catch (Exception ex)
+                {
+                    CustomMessageBox.Show(ex.ToString());
+                }
 
-            //toSend = "$PKHUN,2,12,??,1234,000.00,000.0,16.0,128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00\r\n"; DDDMM.SSX
-            string toSend = "$PKHUN,2,12,??," + MMSI + ",000.00,000.0," + velocity.ToString("F1") + ", " + heading.ToString("F1") + ",00.0,000.0,0" + latDDDMM.ToString("F2") + "S," + lonDDDMM.ToString("F2") + "E,08:30:31,S,T,W,*00\r\n";
+                // and send to back
+                datafileRead.Add(datafileRead[0]);
+                datafileRead.RemoveAt(0);
+                //CustomMessageBox.Show("Timer: " + datafileRead[0]);
 
-            processNewText(toSend);
+            }
+            else
+            {
+                //create a test track
+                double latDDDMM = 3800 + random.Next(0, 60).ConvertToDouble() + (random.Next(0, 100).ConvertToDouble() / 10000.0);
+                double lonDDDMM = 14500 + random.Next(0, 60).ConvertToDouble() + (random.Next(0, 100).ConvertToDouble() / 10000.0);
+                int heading = random.Next(0, 360);
+                string MMSI = "Contact" + random.Next(0, 10).ToString();
+                double velocity = random.Next(0, 20);
+
+                //toSend = "$PKHUN,2,12,??,1234,000.00,000.0,16.0,128.6,00.0,000.0,05029.78N,00224.96W,08:30:31,S,T,W,*00\r\n"; DDDMM.SSX
+                string toSend = "$PKHUN,2,12,??," + MMSI + ",000.00,000.0," + velocity.ToString("F1") + "," + heading.ToString("F1") + ",00.0,000.0,0" + latDDDMM.ToString("F2") + "S," + lonDDDMM.ToString("F2") + "E,08:30:31,S,T,W,*00\r\n";
+
+                processNewText(toSend);
+            }
 
         }
 
@@ -159,27 +196,36 @@ namespace MissionPlanner.Utilities
 
             bufferstr += toSend;
 
-            contact newContact = parseARPAStringbuffer();
-            if (newContact.rangeOverlay != null && newContact.vehicle != null)
+            parseARPAStringbuffer();
+            /*if (newContact.rangeOverlay != null && newContact.vehicle != null)
             {
                 contacts[newContact.label] = newContact;
-            }
+            } */
         }
 
-        public contact parseARPAStringbuffer()
+        public void parseARPAStringbuffer()
         {
-            //search bufferstr for start
-            int startindex = bufferstr.IndexOf("$PKHUN");
-            int endindex = bufferstr.IndexOf("*00\r\n");
-            //CustomMessageBox.Show("ARPA HERE1");
             contact retContact = new contact();
+            //search bufferstr for start and end
+            int startindex = bufferstr.IndexOf("$PKHUN");
+            if (startindex == -1)
+            {
+                //retContact.rangeOverlay = null;
+                //retContact.vehicle = null;
+                //return retContact;
+                return;
+            }
+            int endindex = bufferstr.IndexOf("*00\r\n", startindex);
+            //CustomMessageBox.Show("Buffer: " + bufferstr);
+            
 
             //check if we actually have a string
-            if (startindex == -1 || endindex == -1)
+            if (endindex == -1)
             {
-                retContact.rangeOverlay = null;
-                retContact.vehicle = null;
-                return retContact;
+                //retContact.rangeOverlay = null;
+                //retContact.vehicle = null;
+                //return retContact;
+                return;
             }
 
             //CustomMessageBox.Show("ARPA HERE2a");
@@ -196,9 +242,10 @@ namespace MissionPlanner.Utilities
             // check we have the correct number of fields
             if (fields.Length != 18)
             {
-                retContact.rangeOverlay = null;
-                retContact.vehicle = null;
-                return retContact;
+                //retContact.rangeOverlay = null;
+                //retContact.vehicle = null;
+                //return retContact;
+                return;
             }
 
             //CustomMessageBox.Show("ARPA HERE3");
@@ -237,7 +284,9 @@ namespace MissionPlanner.Utilities
             retContact.rangeOverlay = CreateCircle(lat, lon, 10);
             retContact.label = label;
             //CustomMessageBox.Show("ARPA " + label + " with pos " + fields[11] + ", " + fields[12] + " -> " + lat.ToString() + ", " + lon.ToString());
-            return retContact;
+            //return retContact;
+            //add contact in
+            contacts[retContact.label] = retContact;
         }
 
         public List<GMapMarker> UpdateContacts()
