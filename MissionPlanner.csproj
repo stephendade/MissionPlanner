@@ -4540,6 +4540,18 @@
     <Content Include="aircraft.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="CustomZones\R323A WESTERN PORT.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomZones\R323B WESTERN PORT.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomZones\R332 HANNS INLET.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomZones\R339 CAPE SCHANCK.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="quaternion.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
